@@ -1,38 +1,74 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FRANCO PRO V5</title>
+<title>FRANCO PRO V6</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#080e12;color:white;font-family:Arial;padding:20px}
-h2{text-align:center;color:#20d1c5}
-.card{background:#122027;border:1px solid #29414a;border-radius:22px;padding:20px;margin:18px 0}
-label{display:block;color:#35d6d0;margin-bottom:12px;font-size:20px}
-textarea,input{width:100%;background:#091217;color:white;border:1px solid #38515a;border-radius:16px;padding:17px;font-size:22px;margin-bottom:15px}
-textarea{height:145px;resize:vertical}
-button{width:100%;padding:17px;border:0;border-radius:16px;background:#18bdb2;color:#061416;font-size:21px;font-weight:bold;margin:7px 0}
+body{
+ margin:0;padding:18px;
+ background:#080e12;color:white;
+ font-family:Arial,sans-serif;
+}
+.container{max-width:650px;margin:auto}
+h1{text-align:center;color:#20d1c5;font-size:32px}
+.sub{text-align:center;color:#9bb4bc;margin-bottom:25px}
+.card{
+ background:#122027;border:1px solid #29414a;
+ border-radius:22px;padding:20px;margin:18px 0;
+}
+label{display:block;color:#35d6d0;margin-bottom:12px;font-size:19px}
+textarea,input{
+ width:100%;background:#091217;color:white;
+ border:1px solid #38515a;border-radius:14px;
+ padding:16px;font-size:20px;margin-bottom:15px;
+}
+textarea{height:140px;resize:vertical}
+button{
+ width:100%;padding:16px;border:0;
+ border-radius:14px;background:#18bdb2;
+ color:#061416;font-size:19px;font-weight:bold;
+ margin:7px 0;cursor:pointer;
+}
 .secondary{background:#20353c;color:#35d6d0}
-#result{font-size:27px;min-height:65px;line-height:1.7;overflow-wrap:anywhere}
-#status{color:#38d6b4;text-align:center;margin-top:12px}
+.directions{display:flex;gap:8px}
+.directions button{font-size:15px;flex:1}
+.directions .active{background:#18bdb2;color:#061416}
+#result{
+ font-size:26px;min-height:70px;
+ line-height:1.8;overflow-wrap:anywhere;
+}
+#status{text-align:center;color:#38d6b4;margin-top:12px}
+.footer{text-align:center;color:#607982;font-size:13px;margin:25px}
 </style>
 </head>
 <body>
-<h2>FRANCO PRO V5</h2>
-<h2>SMART TRANSLATOR</h2>
+<div class="container">
+
+<h1>FRANCO PRO V6</h1>
+<div class="sub">SMART TRANSLATOR</div>
 
 <div class="card">
-<label>اكتب الفرانكو هنا</label>
+<label>اختار اتجاه الترجمة</label>
+<div class="directions">
+<button id="toArabic" class="active">فرانكو ← عربي</button>
+<button id="toFranco" class="secondary">عربي ← فرانكو</button>
+</div>
+</div>
+
+<div class="card">
+<label id="sourceLabel">اكتب الفرانكو هنا</label>
 <textarea id="source" placeholder="مثال: ezayak ya 7abibi"></textarea>
 <button id="translate">ترجم للعربي</button>
 </div>
 
 <div class="card">
-<label>الترجمة العربية</label>
+<label id="resultLabel">الترجمة العربية</label>
 <div id="result">الترجمة هتظهر هنا...</div>
 <button id="copy">نسخ الترجمة</button>
-<button class="secondary" id="clear">مسح النص</button>
+<button id="clear" class="secondary">مسح النص</button>
 <div id="status"></div>
 </div>
 
@@ -41,6 +77,9 @@ button{width:100%;padding:17px;border:0;border-radius:16px;background:#18bdb2;co
 <input id="word" placeholder="كلمة فرانكو">
 <input id="meaning" placeholder="معناها بالعربي">
 <button id="save">حفظ الكلمة</button>
+</div>
+
+<div class="footer">FRANCO PRO V6 - MADE FOR YOU</div>
 </div>
 
 <script>
@@ -68,12 +107,43 @@ const dict = {
 "da":"ده","di":"دي",
 "enta 3amel eh":"أنت عامل إيه",
 "ana tamam":"أنا تمام",
-"7abibi":"حبيبي"
+"ana 3ayez":"أنا عايز",
+"ana 3ayza":"أنا عايزة",
+"7abibi":"حبيبي",
+"5alas":"خلاص",
+"3adi":"عادي",
+"7aga":"حاجة",
+"ma3lesh":"معلش",
+"3ashan":"عشان",
+"delwa2ty":"دلوقتي",
+"bardo":"برضه",
+"enta fein":"أنت فين",
+"7ader":"حاضر",
+"mabrook":"مبروك",
+"7ob":"حب",
+"3omri":"عمري",
+"ya3ni":"يعني",
+"kteer":"كتير",
+"awii":"أوي",
+"3amel":"عامل",
+"3amla":"عاملة",
+"b7ebak":"بحبك",
+"b7ebek":"بحبك",
+"enta gamed":"أنت جامد",
+"yalla":"يلا",
+"eshta":"اشطا",
+"w7shtny":"وحشتني",
+"m3ak":"معاك",
+"m3aki":"معاكي"
 };
 
 try {
 Object.assign(dict,JSON.parse(localStorage.getItem("franco_words")||"{}"));
 } catch(e) {}
+
+let mode="ar";
+
+const $=id=>document.getElementById(id);
 
 function convertWord(w){
  let key=w.toLowerCase();
@@ -95,10 +165,11 @@ function convertWord(w){
  "p":"ب","q":"ق","r":"ر","s":"س","t":"ت",
  "u":"و","v":"ف","w":"و","x":"كس","y":"ي","z":"ز"
  };
+
  return s.split("").map(c=>chars[c]??c).join("");
 }
 
-function translate(text){
+function translateToArabic(text){
  let key=text.toLowerCase().trim();
  if(dict[key]) return dict[key];
 
@@ -107,48 +178,112 @@ function translate(text){
  .join("");
 }
 
-document.getElementById("translate").onclick=function(){
- let text=document.getElementById("source").value.trim();
- let result=document.getElementById("result");
- let status=document.getElementById("status");
+function translateToFranco(text){
+ let reverse={};
+
+ for(let key in dict){
+  let meaning=dict[key].trim();
+  if(!reverse[meaning]) reverse[meaning]=key;
+ }
+
+ if(reverse[text.trim()]) return reverse[text.trim()];
+
+ const chars={
+ "ا":"a","أ":"a","إ":"e","آ":"a",
+ "ب":"b","ت":"t","ث":"th","ج":"g",
+ "ح":"7","خ":"5","د":"d","ذ":"z",
+ "ر":"r","ز":"z","س":"s","ش":"sh",
+ "ص":"9","ض":"d","ط":"6","ظ":"z",
+ "ع":"3","غ":"8","ف":"f","ق":"2",
+ "ك":"k","ل":"l","م":"m","ن":"n",
+ "ه":"h","و":"w","ي":"y","ى":"a",
+ "ة":"a","ء":"2","ؤ":"2","ئ":"2",
+ "أ":"a","ئ":"2","چ":"ch"
+ };
+
+ return text.split(/(\s+|[،,.!?؟]+)/g)
+ .map(part=>{
+  if(reverse[part.trim()]) return reverse[part.trim()];
+  return part.split("").map(c=>chars[c]??c).join("");
+ })
+ .join("");
+}
+
+function translate(){
+ let text=$("source").value.trim();
 
  if(!text){
- status.textContent="اكتب الفرانكو الأول";
- return;
+  $("status").textContent="اكتب النص الأول";
+  return;
  }
- result.textContent=translate(text);
- status.textContent="تمت الترجمة بنجاح";
-};
 
-document.getElementById("copy").onclick=async function(){
- let text=document.getElementById("result").textContent;
+ let result=mode==="ar"
+ ?translateToArabic(text)
+ :translateToFranco(text);
+
+ $("result").textContent=result;
+ $("status").textContent="تمت الترجمة بنجاح ✓";
+}
+
+function changeMode(m){
+ mode=m;
+ $("toArabic").className=m==="ar"?"active":"secondary";
+ $("toFranco").className=m==="fr"?"active":"secondary";
+
+ $("sourceLabel").textContent=m==="ar"?"اكتب الفرانكو هنا":"اكتب العربي هنا";
+ $("resultLabel").textContent=m==="ar"?"الترجمة العربية":"الترجمة فرانكو";
+ $("source").placeholder=m==="ar"?"مثال: ezayak ya 7abibi":"مثال: إزيك يا حبيبي";
+ $("translate").textContent=m==="ar"?"ترجم للعربي":"ترجم للفرانكو";
+
+ $("result").textContent="الترجمة هتظهر هنا...";
+ $("source").value="";
+ $("status").textContent="";
+}
+
+$("toArabic").onclick=()=>changeMode("ar");
+$("toFranco").onclick=()=>changeMode("fr");
+$("translate").onclick=translate;
+
+$("copy").onclick=async()=>{
+ let text=$("result").textContent;
+
+ if(text==="الترجمة هتظهر هنا..."){
+  $("status").textContent="مفيش ترجمة لنسخها";
+  return;
+ }
+
  try{
- await navigator.clipboard.writeText(text);
- document.getElementById("status").textContent="تم النسخ بنجاح";
+  await navigator.clipboard.writeText(text);
+  $("status").textContent="تم النسخ بنجاح ✓";
  }catch(e){
- document.getElementById("status").textContent="حدد الترجمة وانسخها يدويا";
+  $("status").textContent="حدد النص وانسخه يدويا";
  }
 };
 
-document.getElementById("clear").onclick=function(){
- document.getElementById("source").value="";
- document.getElementById("result").textContent="الترجمة هتظهر هنا...";
- document.getElementById("status").textContent="";
+$("clear").onclick=()=>{
+ $("source").value="";
+ $("result").textContent="الترجمة هتظهر هنا...";
+ $("status").textContent="";
 };
 
-document.getElementById("save").onclick=function(){
- let w=document.getElementById("word").value.trim().toLowerCase();
- let m=document.getElementById("meaning").value.trim();
+$("save").onclick=()=>{
+ let w=$("word").value.trim().toLowerCase();
+ let m=$("meaning").value.trim();
+
  if(!w||!m){
- document.getElementById("status").textContent="اكتب الكلمة ومعناها";
- return;
+  $("status").textContent="اكتب الكلمة ومعناها";
+  return;
  }
+
  dict[w]=m;
  localStorage.setItem("franco_words",JSON.stringify(dict));
- document.getElementById("status").textContent="تم حفظ الكلمة";
- document.getElementById("word").value="";
- document.getElementById("meaning").value="";
+
+ $("status").textContent="تم حفظ الكلمة بنجاح ✓";
+ $("word").value="";
+ $("meaning").value="";
 };
 </script>
 </body>
 </html>
+
+
